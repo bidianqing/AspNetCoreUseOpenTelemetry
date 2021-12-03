@@ -32,6 +32,7 @@ namespace AspNetCoreUseOpenTelemetry
                 return connection;
             });
 
+            // https://devblogs.microsoft.com/dotnet/opentelemetry-net-reaches-v1-0/
             services.AddOpenTelemetryTracing(builder =>
             {
                 builder.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("AspNetCoreUseOpenTelemetry"))

@@ -49,7 +49,7 @@ namespace AspNetCoreUseOpenTelemetry.Controllers
         public async Task<Person> Post([FromBody] Person person)
         {
             var httpClient = _httpClientFactory.CreateClient();
-            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("https://www.cnblogs.com");
+            HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("http://localhost:5001/weatherforecast");
             var content = await httpResponseMessage.Content.ReadAsStringAsync();
 
             await _redis.StringSetAsync("name", "bidianqing");
