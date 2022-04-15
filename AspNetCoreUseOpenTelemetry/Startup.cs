@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using StackExchange.Redis;
 using System;
+using System.Reflection;
 
 namespace AspNetCoreUseOpenTelemetry
 {
@@ -37,14 +39,37 @@ namespace AspNetCoreUseOpenTelemetry
             // https://github.com/open-telemetry/opentelemetry-dotnet-contrib
             services.AddOpenTelemetryTracing(builder =>
             {
-                builder.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("AspNetCoreUseOpenTelemetry"))
+                // OpenTelemetry
+                var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown";
+
+                var resourceBuilder = ResourceBuilder.CreateDefault().AddService("app1", serviceVersion: assemblyVersion, serviceInstanceId: Environment.MachineName);
+
+                builder.SetResourceBuilder(resourceBuilder)
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRedisInstrumentation(connection)
-                    .AddZipkinExporter(configure =>
-                    {
-                        configure.Endpoint = new Uri("http://localhost:9411/api/v2/spans");
-                    });
+                    .AddMySqlDataInstrumentation();
+                    
+                string tracingExporter = Configuration["UseTracingExporter"];
+
+                switch (tracingExporter)
+                {
+                    // https://zipkin.io/
+                    case "zipkin":
+                        builder.AddZipkinExporter(configure =>
+                        {
+                            configure.Endpoint = new Uri("http://localhost:9411/api/v2/spans");
+                        });
+                        break;
+
+                    // https://www.jaegertracing.io/
+                    case "jaeger":
+                        builder.AddJaegerExporter(configure =>
+                        {
+                            configure.Protocol = JaegerExportProtocol.UdpCompactThrift;
+                        });
+                        break;
+                }
             });
         }
 
