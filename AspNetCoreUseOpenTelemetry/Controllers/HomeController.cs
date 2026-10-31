@@ -1,9 +1,6 @@
-﻿using AspNetCoreUseOpenTelemetry.Models;
-using Dapper.Contrib.Extensions;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using MySql.Data.MySqlClient;
 using StackExchange.Redis;
 using System.Net.Http;
 using System.Threading.Tasks;

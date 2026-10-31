@@ -1,14 +1,12 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using StackExchange.Redis;
-using System.Diagnostics;
-using System.Net.Mime;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +14,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddHttpClient();
 
-var connection = ConnectionMultiplexer.Connect("localhost:6379");
+var connection = ConnectionMultiplexer.Connect("localhost:25689");
 builder.Services.AddSingleton(sp =>
 {
     return connection;
@@ -26,28 +24,23 @@ builder.Services.AddSingleton(sp =>
 // https://github.com/open-telemetry/opentelemetry-dotnet
 // https://github.com/open-telemetry/opentelemetry-dotnet-contrib
 builder.Services.AddOpenTelemetry()
-    .WithTracing(traceProviderBuilder =>
+    .ConfigureResource(resource => resource.AddService(serviceName: builder.Environment.ApplicationName))
+    .WithTracing(tracing =>
     {
-        traceProviderBuilder.AddSource(DiagnosticsConfig.ActivitySource.Name)
-                            .ConfigureResource(resource => resource
-                            .AddService(DiagnosticsConfig.ServiceName))
-                            .AddAspNetCoreInstrumentation()
-                            .AddHttpClientInstrumentation()
-                            .AddConsoleExporter();
-
+        tracing.AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddConsoleExporter()
+            .AddOtlpExporter(options =>
+            {
+                // docker run --rm -d -p 9411:9411 --name zipkin ghcr.io/openzipkin-contrib/zipkin-otel
+                options.Endpoint = new Uri("https://7005286a83df530c-1-9411.spca.r.killercoda.com/v1/traces");
+                options.Protocol = OtlpExportProtocol.HttpProtobuf;
+            });
     });
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
-
-public static class DiagnosticsConfig
-{
-    public const string ServiceName = "MyService";
-    public static ActivitySource ActivitySource = new ActivitySource(ServiceName);
-}
