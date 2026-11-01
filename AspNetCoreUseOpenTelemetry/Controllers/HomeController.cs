@@ -1,9 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using StackExchange.Redis;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 
 namespace AspNetCoreUseOpenTelemetry.Controllers
@@ -14,17 +9,14 @@ namespace AspNetCoreUseOpenTelemetry.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IDatabase _redis;
         private readonly IConfiguration _configuration;
 
         public HomeController(ILogger<HomeController> logger,
             IHttpClientFactory httpClientFactory,
-            ConnectionMultiplexer connectionMultiplexer,
             IConfiguration configuration)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
-            _redis = connectionMultiplexer.GetDatabase();
             _configuration = configuration;
         }
 

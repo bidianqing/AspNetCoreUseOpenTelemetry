@@ -3,9 +3,8 @@
   "profiles": {
     "AspNetCoreUseOpenTelemetry": {
       "commandName": "Project",
-      "dotnetRunMessages": "true",
       "launchBrowser": false,
-      "launchUrl": "weatherforecast",
+      "launchUrl": "home",
       "applicationUrl": "http://localhost:5001",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
