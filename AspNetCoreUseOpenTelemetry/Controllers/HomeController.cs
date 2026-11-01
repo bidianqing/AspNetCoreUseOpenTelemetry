@@ -31,6 +31,8 @@ namespace AspNetCoreUseOpenTelemetry.Controllers
         [HttpGet]
         public async Task Get()
         {
+            _logger.LogInformation("Test Logging");
+
             string requestUri = "https://www.baidu.com";
 
             var httpClient = _httpClientFactory.CreateClient();
